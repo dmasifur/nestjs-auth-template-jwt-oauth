@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Permission {
+  id         Int     @unique @default(autoincrement())
+  role_id    Int
+  action     String  @db.VarChar
+  subject    String  @db.VarChar
+  inverted   Boolean @default(false)
+  conditions Json?
+  reason     String?
+  role       Role    @relation(fields: [role_id], references: [id])
+
+  @@map("permissions")
+}
+
+model Role {
+  id         Int          @unique @default(autoincrement())
+  name       String
+  permission Permission[]
+  user       User[]
+
+  @@map("roles")
+}
+
+model User {
+  id         Int     @unique @default(autoincrement())
+  first_name String  @db.VarChar(100)
+  last_name  String  @db.VarChar(100)
+  email      String  @unique @db.VarChar(255)
+  role_id    Int
+  image_url  String?
+  password   String?
+  role       Role    @relation(fields: [role_id], references: [id])
+
+  @@map("users")
+}
