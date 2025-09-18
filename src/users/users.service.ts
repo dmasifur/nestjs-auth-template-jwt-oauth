@@ -3,67 +3,66 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma.service';
 import { Prisma } from 'generated/prisma';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
-
-  constructor(
-    private prisma:PrismaService
-  ){}
+  constructor(private prisma: PrismaService) {}
 
   async create(createUserDto: CreateUserDto) {
+    const hashedPassword = await bcrypt.hash(createUserDto.password!, 10);
+
     return await this.prisma.user.create({
-      data:{
-        first_name:createUserDto.firstName,
-        last_name:createUserDto.lastName,
-        email:createUserDto.email,
-        role_id:createUserDto.roleId,
-        password:createUserDto.password,
-        image_url:createUserDto.imageUrl
-      }
-    })
+      data: {
+        first_name: createUserDto.firstName,
+        last_name: createUserDto.lastName,
+        email: createUserDto.email,
+        role_id: createUserDto.roleId,
+        password: hashedPassword,
+        image_url: createUserDto.imageUrl,
+      },
+    });
   }
 
-  async findAll(params:{
-    skip?:number;
-    take?:number;
-    cursor?:Prisma.UserWhereUniqueInput,
-    where?:Prisma.UserWhereInput,
-    orderBy?:Prisma.UserOrderByWithRelationInput
+  async findAll(params: {
+    skip?: number;
+    take?: number;
+    cursor?: Prisma.UserWhereUniqueInput;
+    where?: Prisma.UserWhereInput;
+    orderBy?: Prisma.UserOrderByWithRelationInput;
   }) {
-
-    const {skip,take,cursor,where,orderBy} = params
+    const { skip, take, cursor, where, orderBy } = params;
 
     return await this.prisma.user.findMany({
       skip,
       take,
       cursor,
       where,
-      orderBy
-    })
+      orderBy,
+    });
   }
 
   async findOne(userWhereUniqueInput: Prisma.UserWhereUniqueInput) {
-    return await this.prisma.user.findUnique({where:userWhereUniqueInput})
+    return await this.prisma.user.findUnique({ where: userWhereUniqueInput });
   }
 
   async update(id: Prisma.UserWhereUniqueInput, updateUserDto: UpdateUserDto) {
     return await this.prisma.user.update({
-      where:id,
-      data:{
-        first_name:updateUserDto.firstName,
-        last_name:updateUserDto.lastName,
-        email:updateUserDto.email,
-        password:updateUserDto.password,
-        image_url:updateUserDto.imageUrl,
-        role_id:updateUserDto.roleId
-      }
-    })
+      where: id,
+      data: {
+        first_name: updateUserDto.firstName,
+        last_name: updateUserDto.lastName,
+        email: updateUserDto.email,
+        password: updateUserDto.password,
+        image_url: updateUserDto.imageUrl,
+        role_id: updateUserDto.roleId,
+      },
+    });
   }
 
   async remove(userWhereUniqueInput: Prisma.UserWhereUniqueInput) {
     return await this.prisma.user.delete({
-      where:userWhereUniqueInput
+      where: userWhereUniqueInput,
     });
   }
 }
